@@ -1,10 +1,7 @@
 name = "iphey-api"
-main = "src/worker.ts"
+main = "src/worker-minimal.ts"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
-# No build command - wrangler will handle TypeScript compilation
-
-# Environment variables
 [vars]
 NODE_ENV = "production"
