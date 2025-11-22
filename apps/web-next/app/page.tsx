@@ -59,7 +59,14 @@ const ComponentLoader = ({ message = 'Loading...' }: { message?: string }) => (
 
 const loadReport = async () => {
   const fingerprint = await collectFingerprint();
-  const response = await fetch('/api/v1/report', {
+
+  // Check if API is configured
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    throw new Error('⚠️ Backend API Not Configured\n\nThis is a frontend-only demo deployment. To enable full functionality:\n\n1. Deploy the backend API (see /docs/DEPLOYMENT.md)\n2. Set NEXT_PUBLIC_API_URL environment variable in Cloudflare Pages\n3. Redeploy\n\nRepository: https://github.com/7and1/iphey');
+  }
+
+  const response = await fetch(`${apiUrl}/api/v1/report`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ fingerprint }),

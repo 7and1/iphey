@@ -5,7 +5,12 @@
 
 import type { EnhancedIPResponse, ServiceStatus, ThreatIntelligence, ASNAnalysis } from '@/types/report';
 
-const API_BASE = '/api/v1';
+// Use environment variable for API URL, fallback to relative path for development
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = `${API_BASE_URL}/api/v1`;
+
+// Check if we're in demo mode (no backend API configured)
+const IS_DEMO_MODE = !process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * Fetches enhanced IP information including geolocation, threats, and ASN
