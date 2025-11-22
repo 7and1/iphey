@@ -1,0 +1,44 @@
+import type { IpInfoDetails, NormalizedIpInsight, RadarIpResponse } from '../types/ip';
+
+export const normalizeIpInfo = (payload: IpInfoDetails): NormalizedIpInsight => {
+  const [latitude, longitude] = payload.loc?.split(',').map(v => Number.parseFloat(v)) ?? [];
+  return {
+    ip: payload.ip,
+    city: payload.city,
+    region: payload.region,
+    country: payload.country,
+    postal: payload.postal,
+    timezone: payload.timezone,
+    latitude,
+    longitude,
+    org: payload.org ?? payload.company?.name,
+    asn: payload.asn?.asn,
+    networkType: payload.asn?.type ?? payload.company?.type,
+    privacy: payload.privacy,
+    riskScore: payload.privacy?.vpn || payload.privacy?.proxy ? 65 : 10,
+    riskReasons: payload.privacy?.vpn ? ['VPN detected'] : payload.privacy?.proxy ? ['Proxy detected'] : [],
+    anycast: payload.anycast,
+    bogon: payload.bogon,
+    source: 'ipinfo',
+    fetchedAt: Date.now(),
+  };
+};
+
+export const normalizeRadar = (payload: RadarIpResponse): NormalizedIpInsight => {
+  return {
+    ip: payload.ip,
+    city: payload.location?.city,
+    region: payload.location?.subdivision,
+    country: payload.location?.country,
+    latitude: payload.location?.latitude,
+    longitude: payload.location?.longitude,
+    org: payload.traits?.organization ?? payload.traits?.isp,
+    asn: payload.autonomous_system?.asn ? `AS${payload.autonomous_system.asn}` : undefined,
+    networkType: payload.traits?.network_type,
+    privacy: payload.traits?.anonymization,
+    riskScore: payload.risk?.score,
+    riskReasons: payload.risk?.categories,
+    source: 'radar',
+    fetchedAt: Date.now(),
+  };
+};

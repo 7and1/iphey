@@ -1,0 +1,10 @@
+name = "iphey"
+compatibility_date = "2024-01-15"
+
+# Pages configuration
+pages_build_output_dir = "apps/web-next/out"
+
+# Environment variables
+[vars]
+# Add any non-sensitive environment variables here
+# Sensitive values should be set via GitHub Secrets or Cloudflare dashboard
