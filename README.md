@@ -60,34 +60,34 @@ It's gitignored and not integrated into the build process.
 
 All payloads are validated via Zod and errors bubble up through a typed ApiError helper.
 
-## 生产部署步骤 (Production Deployment)
+## Production Deployment
 
-镜像 `creepjs` 项目中的 `DIRECT_DEPLOY.md` / `.deploy.env` 做法，这里同样把 API 与前端都发布到 Cloudflare（Workers + Pages）。关键步骤：
+Following the `creepjs` project's `DIRECT_DEPLOY.md` / `.deploy.env` approach, deploy both the API and frontend to Cloudflare (Workers + Pages). Key steps:
 
-1. **准备凭据**
-   - 复制 `.deploy.env.example` 为 `.deploy.env`，并把 `/Volumes/SSD/dev/new/2fa/.deploy.env` 中的真实值填入对应变量（Cloudflare Account/API token、KV、NEXT_PUBLIC_API_URL 等）。
-   - `wrangler secret put` 写入 `IPINFO_TOKEN`、`CLOUDFLARE_RADAR_TOKEN` 等机密，确保 `wrangler.toml` 里的 KV `binding` 与生产 Namespace 对齐。
-2. **构建前端 (Cloudflare Pages)**
-   - 运行 `npm run web:build`（内部即 `npm run build --prefix apps/web-next`）。
-   - 使用 Next on Pages 产出的 `.vercel/output/static` 执行：
+1. **Prepare credentials**
+   - Copy `.deploy.env.example` to `.deploy.env` and fill in real values (Cloudflare Account/API token, KV, NEXT_PUBLIC_API_URL, etc.).
+   - Use `wrangler secret put` to write `IPINFO_TOKEN`, `CLOUDFLARE_RADAR_TOKEN`, and other secrets. Ensure KV `binding` in `wrangler.toml` matches the production Namespace.
+2. **Build frontend (Cloudflare Pages)**
+   - Run `npm run web:build` (internally runs `npm run build --prefix apps/web-next`).
+   - Deploy the Next on Pages output at `.vercel/output/static`:
      ```bash
      CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID \
      CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN \
      npx wrangler pages deploy .vercel/output/static \
        --project-name="$CLOUDFLARE_PAGES_PROJECT"
      ```
-3. **构建 / 部署 API (Cloudflare Workers)**
-   - `npm run build:worker` 会串行执行 Next.js build + `tsc`，生成 `dist/worker.js`。
-   - `wrangler deploy --name "$CLOUDFLARE_WORKER_NAME" --env production` 推送到 Workers，绑定 KV + 环境变量。
-4. **验收**
-   - `curl "$PRODUCTION_API_URL/api/health"`、`curl -I "$PRODUCTION_WEB_URL"`。
-   - Cloudflare Radar / ipinfo token 的有效性会写在 `/api/health` 响应里，方便对照。
+3. **Build / deploy API (Cloudflare Workers)**
+   - `npm run build:worker` sequentially runs Next.js build + `tsc`, generating `dist/worker.js`.
+   - `wrangler deploy --name "$CLOUDFLARE_WORKER_NAME" --env production` pushes to Workers, binding KV + environment variables.
+4. **Verification**
+   - `curl "$PRODUCTION_API_URL/api/health"` and `curl -I "$PRODUCTION_WEB_URL"`.
+   - Cloudflare Radar / ipinfo token validity is included in the `/api/health` response for easy verification.
 
-更细粒度的操作（KV 初始化、Pages Diff、GitHub Release）请查看 `docs/DIRECT_DEPLOY.md`，它与 `/Volumes/SSD/dev/new/ip-dataset/creepjs/DIRECT_DEPLOY.md` 保持同构，方便在两个仓库间复制命令。
+For more detailed operations (KV initialization, Pages diff, GitHub release), see `docs/DIRECT_DEPLOY.md`, which mirrors `/Volumes/SSD/dev/new/ip-dataset/creepjs/DIRECT_DEPLOY.md` for easy command copying between repositories.
 
 If you prefer container-based hosting for the Express server, run `npm run build` and deploy `dist/server.js` to your platform of choice, then point the front-end’s `NEXT_PUBLIC_API_URL` to that hostname.
 
-## API 示例 (API Examples)
+## API Examples
 
 ```bash
 # Health check & upstream readiness
@@ -116,7 +116,7 @@ curl -X POST https://api.example.com/api/v1/report \
 curl https://api.example.com/api/v1/ip/8.8.8.8/threats | jq '.combined'
 ```
 
-所有请求/响应都经过 Zod 校验并由统一的 `ApiError` 抛出，所以 curl 示例里的返回值可以直接复制到 CI 或外部监控脚本。
+All requests/responses are validated through Zod and errors are thrown via a unified `ApiError` helper, so curl example responses can be directly copied to CI or external monitoring scripts.
 
 ## Frontend UX
 - Landing verdict hero with animated score dial and trust badge
@@ -131,14 +131,14 @@ The Next.js SPA uses React Query to run `collectFingerprint()` (WebGL, canvas, a
 - When adding new routers or clients, include fixtures under `src/**/__tests__` with mock resolvers so CI keeps the 80% target.
 - Manual QA: `curl http://localhost:4310/api/health`, `curl -XPOST http://localhost:4310/api/v1/report -d '{"fingerprint":{...}}'`, plus visiting the Next.js dev server on http://localhost:3002.
 
-## 故障排查 (Troubleshooting)
+## Troubleshooting
 
-- **IP shows `::1` locally / IP 总是 ::1**：本地 Express 未开启反代，Cloudflare 头部不可用。部署到 Workers 或设置 `TRUST_PROXY=loopback` 并在调试请求里附带 `X-Forwarded-For`。
-- **`Invalid environment configuration` on boot / 启动即配置错误**：`.env` 至少需要 `IPINFO_TOKEN` 或 `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_RADAR_TOKEN`。缺失时 `src/config.ts` 会抛出 Zod 错误。
-- **`CLOUDFLARE_API_TOKEN required` 部署失败**：确保在执行任何 `wrangler` 命令前 `source .deploy.env`，token 需要 Workers KV + Pages 权限（与 creepjs 相同）。
-- **`429` from upstream providers / 频繁 429**：关闭或延长 `CACHE_WARMING_*`，SWR 缓存会在后台刷新。
-- **Frontend can’t reach API / Web 无法访问 API**：确认 Pages 环境变量 `NEXT_PUBLIC_API_URL` 指向 Workers 域名，并在 `CORS_ALLOWED_ORIGINS` 添加 Pages 域。
-- **Pages 构建成功但白屏**：检查 `.vercel/output/static` 是否由 Next on Pages 生成；必要时运行 `npx @cloudflare/next-on-pages` 再 `wrangler pages deploy`，此流程与 creepjs/Web 一致。
+- **IP shows `::1` locally**: Local Express doesn't have reverse proxy enabled, Cloudflare headers unavailable. Deploy to Workers or set `TRUST_PROXY=loopback` and include `X-Forwarded-For` in debug requests.
+- **`Invalid environment configuration` on boot**: `.env` requires at least `IPINFO_TOKEN` or both `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_RADAR_TOKEN`. When missing, `src/config.ts` throws a Zod error.
+- **`CLOUDFLARE_API_TOKEN required` deployment fails**: Ensure `source .deploy.env` before executing any `wrangler` commands. Token needs Workers KV + Pages permissions (same as creepjs).
+- **`429` from upstream providers**: Disable or extend `CACHE_WARMING_*`. SWR cache will refresh in the background.
+- **Frontend can't reach API**: Confirm Pages environment variable `NEXT_PUBLIC_API_URL` points to the Workers domain, and add Pages domain to `CORS_ALLOWED_ORIGINS`.
+- **Pages builds successfully but shows blank screen**: Check if `.vercel/output/static` is generated by Next on Pages. If needed, run `npx @cloudflare/next-on-pages` then `wrangler pages deploy`. This workflow is consistent with creepjs/Web.
 
 ## Security Notes
 - Secrets must stay out of git; use `.deploy.env`, `wrangler secret`, or your CI’s secret store.
