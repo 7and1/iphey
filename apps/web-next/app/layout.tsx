@@ -75,42 +75,125 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  // Structured data for SEO
+  // Enhanced Structured Data for SEO with FAQs
   const structuredData = {
     '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: 'IPhey',
-    applicationCategory: 'SecurityApplication',
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-    },
-    description:
-      'Free browser fingerprinting tool and digital identity inspector. Test your online privacy, analyze IP reputation, detect tracking, and understand what websites see about you.',
-    operatingSystem: 'Web Browser',
-    url: 'https://iphey.org',
-    author: {
-      '@type': 'Organization',
-      name: 'IPhey',
-      url: 'https://iphey.org',
-      contactPoint: {
-        '@type': 'ContactPoint',
-        email: 'hello@iphey.com',
-        contactType: 'Customer Support',
+    '@graph': [
+      {
+        '@type': 'SoftwareApplication',
+        '@id': 'https://iphey.org/#software',
+        name: 'IPhey',
+        applicationCategory: 'SecurityApplication',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+        description:
+          'Free browser fingerprinting tool and digital identity inspector. Test your online privacy, analyze IP reputation, detect tracking, and understand what websites see about you.',
+        operatingSystem: 'Web Browser',
+        url: 'https://iphey.org',
+        author: {
+          '@type': 'Organization',
+          name: 'IPhey',
+          url: 'https://iphey.org',
+          contactPoint: {
+            '@type': 'ContactPoint',
+            email: 'hello@iphey.com',
+            contactType: 'Customer Support',
+          },
+        },
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: '4.8',
+          ratingCount: '1250',
+        },
+        featureList: [
+          'Browser fingerprinting detection',
+          'IP reputation analysis',
+          'Digital identity inspection',
+          'Privacy toolkit',
+          'Real-time monitoring',
+          'ASN analysis',
+          'Threat intelligence',
+        ],
       },
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '1250',
-    },
-    featureList: [
-      'Browser fingerprinting detection',
-      'IP reputation analysis',
-      'Digital identity inspection',
-      'Privacy toolkit',
-      'Real-time monitoring',
+      {
+        '@type': 'Organization',
+        '@id': 'https://iphey.org/#organization',
+        name: 'IPhey',
+        url: 'https://iphey.org',
+        logo: 'https://iphey.org/iphey.svg',
+        sameAs: ['https://github.com/7and1/iphey'],
+        contactPoint: {
+          '@type': 'ContactPoint',
+          email: 'hello@iphey.com',
+          contactType: 'Customer Support',
+          availableLanguage: 'English',
+        },
+      },
+      {
+        '@type': 'WebSite',
+        '@id': 'https://iphey.org/#website',
+        url: 'https://iphey.org',
+        name: 'IPhey - Browser Fingerprint & Digital Identity Inspector',
+        description:
+          'Free browser fingerprinting tool and digital identity inspector. Test your online privacy, analyze IP reputation, and understand what websites see about you.',
+        publisher: {
+          '@id': 'https://iphey.org/#organization',
+        },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: 'https://iphey.org/?q={search_term_string}',
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': 'https://iphey.org/#faq',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: 'What is browser fingerprinting?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Browser fingerprinting is a tracking technique that collects information about your browser configuration, device characteristics, and system settings to create a unique identifier. This includes canvas fingerprinting, WebGL data, fonts, screen resolution, timezone, and other attributes that make your browser uniquely identifiable.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Is IPhey free to use?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes, IPhey is completely free with no hidden fees or premium tiers. All features including browser fingerprinting analysis, IP intelligence, threat detection, and privacy recommendations are available at no cost.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'How accurate is browser fingerprinting?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'According to research, 99.24% of users can be uniquely identified when combining browser and device fingerprints, and 80-90% of browser fingerprints are unique enough for accurate tracking. The Electronic Frontier Foundation found that 94% of browsers are uniquely identifiable.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Does IPhey store my data?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'No. IPhey does not store your fingerprints, track you across sessions, or sell your data. All analysis happens in your browser, and the results are yours alone. We prioritize your privacy and transparency.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Can I use IPhey to test my VPN or proxy?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. IPhey is commonly used by security professionals and privacy enthusiasts to test proxy setups, verify VPN connections, and detect fingerprint leaks. You can compare your fingerprint with and without privacy tools to see how effective they are.',
+            },
+          },
+        ],
+      },
     ],
   };
 

@@ -21,3 +21,6 @@ apps/web-next/out/
 # Wrangler
 .wrangler/
 .dev.vars
+
+# External libraries (not part of main app)
+mixvisit/

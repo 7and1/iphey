@@ -128,7 +128,7 @@ Configuration is validated at startup using Zod. The application will fail to st
 ### Project Structure
 - Monorepo structure with separate backend (`src/`) and Next.js frontend (`apps/web-next/`)
 - Cloudflare Pages + Workers are the reference deployment targets (see `docs/DIRECT_DEPLOY.md`)
-- MixVisit library included as subproject for fingerprinting
+- **Note**: The `mixvisit/` directory (if present) is an external Svelte library, NOT part of the main IPhey application. It's gitignored and not integrated into the build process.
 
 ### External Dependencies
 - Requires creepjs assets for browser fingerprinting

@@ -18,6 +18,7 @@ import { ServiceStatusBanner } from '@/components/ServiceStatusBanner';
 import { RiskAssessmentCard } from '@/components/RiskAssessmentCard';
 import { ThreatIntelPanel } from '@/components/ThreatIntelPanel';
 import { ASNInfoPanel } from '@/components/ASNInfoPanel';
+import { SEOContentSection } from '@/components/SEOContentSection';
 import { fetchClientEnhancedIP, fetchServiceStatus } from '@/lib/api';
 
 // Lazy load heavy components
@@ -749,6 +750,9 @@ const ReportExperience = () => {
       >
         <InsightFields fingerprint={fingerprintRef.current} />
       </Section>
+
+      {/* SEO-Optimized Content Section */}
+      <SEOContentSection />
     </div>
   );
 };

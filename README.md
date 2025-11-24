@@ -16,6 +16,9 @@ iphey is a TypeScript-first Express API paired with a Next.js 14 client that ben
 ├─ docs/                # Specs & configuration notes
 ├─ dist/                # Compiled server + bundled frontend (via `npm run build`)
 └─ .env.example         # Required environment variables (no secrets committed)
+
+Note: The mixvisit/ directory (if present) is an external Svelte library, NOT part of IPhey.
+It's gitignored and not integrated into the build process.
 ```
 
 ## Getting Started

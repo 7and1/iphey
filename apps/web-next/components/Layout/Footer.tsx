@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Shield, ExternalLink, Heart } from 'lucide-react';
+import { Shield, ExternalLink } from 'lucide-react';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -136,29 +136,10 @@ export const Footer = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="py-6 border-t border-white/5"
         >
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-slate-500 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <p className="text-xs text-slate-500 text-center">
               © {currentYear} IPhey Identity Intelligence. All rights reserved.
             </p>
-
-            <div className="flex items-center gap-1 text-xs text-slate-500">
-              <span>Made with</span>
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-              >
-                <Heart className="h-3 w-3 text-red-500 fill-red-500" />
-              </motion.div>
-              <span>by</span>
-              <a
-                href="https://ipaddress.cv"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent hover:underline font-medium"
-              >
-                ipaddress.cv
-              </a>
-            </div>
           </div>
         </motion.div>
       </div>
