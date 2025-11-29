@@ -1,0 +1,15 @@
+name = "iphey-api"
+main = "src/worker.ts"
+account_id = "873cd683fb162639ab3732a3a995b64b"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# KV Namespace Bindings for caching
+[[kv_namespaces]]
+binding = "IP_CACHE"
+id = "267ef1060f5b4e99ab6ffce3e8898065"
+preview_id = "8ad5fb84fcdc499094b8bb33f29efdf6"
+
+# Environment variables
+[vars]
+NODE_ENV = "production"
