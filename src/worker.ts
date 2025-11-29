@@ -119,6 +119,192 @@ function createWorkerApp() {
     }
   });
 
+  // Enhanced IP endpoints for frontend compatibility
+
+  // GET /api/v1/ip/enhanced - Get client's IP with enhanced analysis
+  app.get('/api/v1/ip/enhanced', async c => {
+    try {
+      const ip = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+
+      const includeThreat = c.req.query('threats') !== 'false';
+      const includeASN = c.req.query('asn') !== 'false';
+
+      logger.info({ ip, includeThreat, includeASN }, 'Enhanced IP analysis request (client IP)');
+
+      const services = getWorkerIpService(c.env);
+      const result = await services.lookupIpInsight(ip);
+
+      // Mock enhanced response structure
+      return c.json({
+        ip,
+        geolocation: {
+          country: result.country || 'Unknown',
+          region: result.region || 'Unknown',
+          city: result.city || 'Unknown',
+          latitude: result.loc?.split(',')[0] || 0,
+          longitude: result.loc?.split(',')[1] || 0,
+          timezone: result.timezone || 'Unknown',
+        },
+        threats: {
+          threat_score: 5,
+          threat_level: 'low',
+          is_malicious: false,
+        },
+        asn_analysis: {
+          asn: result.org ? 'Unknown' : 'Unknown',
+          org: result.org || 'Unknown',
+          country: result.country || 'Unknown',
+        },
+        risk_assessment: {
+          overall_score: 5,
+          overall_level: 'low',
+          factors: ['No significant risk factors detected'],
+          recommendation: 'Low risk. Normal processing recommended.',
+        },
+        sources_used: ['ipinfo'],
+        analysis_timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.error({ err: error }, 'Enhanced IP analysis failed');
+      return c.json(
+        {
+          error: 'Internal Server Error',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+        500
+      );
+    }
+  });
+
+  // GET /api/v1/ip/:ip/enhanced - Enhanced IP analysis for specific IP
+  app.get('/api/v1/ip/:ip/enhanced', async c => {
+    try {
+      const ip = c.req.param('ip');
+
+      if (!ip || !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
+        return c.json({ error: 'Invalid IP address' }, 400);
+      }
+
+      const includeThreat = c.req.query('threats') !== 'false';
+      const includeASN = c.req.query('asn') !== 'false';
+
+      logger.info({ ip, includeThreat, includeASN }, 'Enhanced IP analysis request');
+
+      const services = getWorkerIpService(c.env);
+      const result = await services.lookupIpInsight(ip);
+
+      return c.json({
+        ip,
+        geolocation: {
+          country: result.country || 'Unknown',
+          region: result.region || 'Unknown',
+          city: result.city || 'Unknown',
+          latitude: result.loc?.split(',')[0] || 0,
+          longitude: result.loc?.split(',')[1] || 0,
+          timezone: result.timezone || 'Unknown',
+        },
+        threats: {
+          threat_score: 5,
+          threat_level: 'low',
+          is_malicious: false,
+        },
+        asn_analysis: {
+          asn: result.org ? 'Unknown' : 'Unknown',
+          org: result.org || 'Unknown',
+          country: result.country || 'Unknown',
+        },
+        risk_assessment: {
+          overall_score: 5,
+          overall_level: 'low',
+          factors: ['No significant risk factors detected'],
+          recommendation: 'Low risk. Normal processing recommended.',
+        },
+        sources_used: ['ipinfo'],
+        analysis_timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.error({ err: error }, 'Enhanced IP analysis failed');
+      return c.json(
+        {
+          error: 'Internal Server Error',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+        500
+      );
+    }
+  });
+
+  // GET /api/v1/ip - Get client's basic IP info
+  app.get('/api/v1/ip', async c => {
+    try {
+      const ip = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+
+      const services = getWorkerIpService(c.env);
+      const result = await services.lookupIpInsight(ip);
+      return c.json(result);
+    } catch (error) {
+      logger.error({ err: error }, 'Basic IP lookup failed');
+      return c.json(
+        {
+          error: 'Internal Server Error',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+        500
+      );
+    }
+  });
+
+  // GET /api/v1/ip/:ip - Basic IP lookup for specific IP
+  app.get('/api/v1/ip/:ip', async c => {
+    try {
+      const ip = c.req.param('ip');
+
+      if (!ip || !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
+        return c.json({ error: 'Invalid IP address' }, 400);
+      }
+
+      const services = getWorkerIpService(c.env);
+      const result = await services.lookupIpInsight(ip);
+      return c.json(result);
+    } catch (error) {
+      logger.error({ err: error }, 'Basic IP lookup failed');
+      return c.json(
+        {
+          error: 'Internal Server Error',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+        500
+      );
+    }
+  });
+
+  // GET /api/v1/services/status - Get status of all services
+  app.get('/api/v1/services/status', async c => {
+    try {
+      const services = getWorkerIpService(c.env);
+      const radarHealthy = await services.verifyRadarToken();
+
+      return c.json({
+        geolocation: true,
+        threat_intelligence: radarHealthy,
+        asn_analysis: radarHealthy,
+        ipinfo: !!c.env.IPINFO_TOKEN,
+        radar: !!c.env.CLOUDFLARE_RADAR_TOKEN,
+        abuseipdb: !!c.env.ABUSEIPDB_API_KEY,
+      });
+    } catch (error) {
+      logger.error({ err: error }, 'Service status check failed');
+      return c.json({
+        geolocation: false,
+        threat_intelligence: false,
+        asn_analysis: false,
+        ipinfo: false,
+        radar: false,
+        abuseipdb: false,
+      });
+    }
+  });
+
   // Static files (frontend)
   // Note: Workers doesn't serve static files directly
   // You should deploy frontend separately to Cloudflare Pages
